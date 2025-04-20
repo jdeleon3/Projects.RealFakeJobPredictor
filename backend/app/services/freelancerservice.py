@@ -1,8 +1,6 @@
 from app.models.jobpost import JobPost
 from bs4 import BeautifulSoup
 import requests
-from decimal import Decimal
-import os
 import pandas as pd
 from json import JSONDecoder
 class FreelancerService:
@@ -49,8 +47,7 @@ class FreelancerService:
                 job.requirements = self.process_job_skills(df['rawDocument.skills'].values[0])
                 job.description = f"{df['rawDocument.description'].values[0]}, Skills: {job.requirements}"
                 
-                print(job)
-                df.to_csv('./job_post.csv', index=False)               
+                print(job)                         
                 print(f"df info: {df.info()}")
                 # Extracting job details from the JSON data
                 return job
