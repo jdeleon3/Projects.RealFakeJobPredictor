@@ -47,7 +47,7 @@ class FreelancerService:
                 job = JobPost ()
                 job.title = df['rawDocument.title'].values[0]
                 job.requirements = self.process_job_skills(df['rawDocument.skills'].values[0])
-                job.description = f'{df['rawDocument.description'].values[0]}, Skills: {job.requirements}'
+                job.description = f"{df['rawDocument.description'].values[0]}, Skills: {job.requirements}"
                 
                 print(job)
                 df.to_csv('./job_post.csv', index=False)               
