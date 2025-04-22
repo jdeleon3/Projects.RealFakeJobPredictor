@@ -6,7 +6,7 @@ class DataWrangler:
 
     def __init__(self, data_path):
         self.data_path = data_path
-        self.df = None
+        self.load_data()
 
     def load_data(self):
         """Load data from a CSV file."""
@@ -24,6 +24,7 @@ class DataWrangler:
             self.df.dropna(inplace=True)
             final_shape = self.df.shape
             print(f"Data cleaned: {initial_shape} -> {final_shape}")
+            return self.df
         else:
             raise ValueError("Data not loaded. Please load the data first.")
         

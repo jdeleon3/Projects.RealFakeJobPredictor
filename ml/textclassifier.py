@@ -29,7 +29,7 @@ class TextClassifier:
             raise ValueError("Input must be a string.")
         text = text.lower()
         text = re.sub(r'[^\w\s]', '', text)
-        text = re.sub(r'[^\x00-\x7F]', '', text)
+        #text = re.sub(r'[^\x00-\x7F]', '', text)
         return text
     
     def tokenize_and_stem_text(self, text: str) -> list:
@@ -42,7 +42,7 @@ class TextClassifier:
         tokens = [self.stemmer.stem(word) for word in tokens if word not in self.stopwords_list]
         return tokens
 
-    def fit(self, df: pd.DataFrame, columnName: str = 'description'):
+    def fit(self, df: pd.DataFrame|pd.Series, columnName: str = 'description'):
         """
         Fit the TF-IDF vectorizer to the job descriptions in the DataFrame.
         columnName: str = 'description': The name of the column containing job descriptions.
@@ -50,12 +50,15 @@ class TextClassifier:
         
         if df is None or df.empty:
             raise ValueError("DataFrame is empty or not provided.")
+        if isinstance(df, pd.Series):
+            df = pd.DataFrame(df, columns=[columnName])
         if columnName not in df.columns:
             raise ValueError(f"Column '{columnName}' not found in DataFrame.")
+        print(type(df))
                 
         df[columnName] = df[columnName].apply(self.clean_text)      
         df[f"{columnName}_tokens"] = df[columnName].apply(self.tokenize_and_stem_text)
-        df[f"{columnName}_wordcount"] = df[f"{columnName}_tokens"].apply(len)
+        df[f"{columnName}_wordcount"] = df[f"{columnName}_tokens"].apply(len).astype(float)
         df[f"{columnName}_readability"] = df[columnName].apply(lambda x: textstat.flesch_reading_ease(x)).fillna(0).astype(float)
         df[f"{columnName}_complexity"] = df[columnName].apply(lambda x: textstat.text_standard(x, float_output=True)).fillna(0).astype(float)                
 
@@ -64,19 +67,21 @@ class TextClassifier:
 
         return self
     
-    def transform(self, df: pd.DataFrame, columnName: str = 'description', return_dense: bool = False):
+    def transform(self, df: pd.DataFrame|pd.Series, columnName: str = 'description', return_dense: bool = False):
         """
         Transform the job descriptions into TF-IDF features.
         return_dense: bool = False: If True, return dense array, else sparse matrix.
         """
         if df is None or df.empty:
             raise ValueError("DataFrame is empty or not provided.")
+        if isinstance(df, pd.Series):
+            df = pd.DataFrame(df, columns=[columnName])
         if columnName not in df.columns:
             raise ValueError(f"Column '{columnName}' not found in DataFrame.")
         
         df[columnName] = df[columnName].apply(self.clean_text)      
         df[f"{columnName}_tokens"] = df[columnName].apply(self.tokenize_and_stem_text)
-        df[f"{columnName}_wordcount"] = df[f"{columnName}_tokens"].apply(len)
+        df[f"{columnName}_wordcount"] = df[f"{columnName}_tokens"].apply(len).astype(float)
         df[f"{columnName}_readability"] = df[columnName].apply(lambda x: textstat.flesch_reading_ease(x)).fillna(0).astype(float)
         df[f"{columnName}_complexity"] = df[columnName].apply(lambda x: textstat.text_standard(x, float_output=True)).fillna(0).astype(float)
 
@@ -102,6 +107,8 @@ class TextClassifier:
         
         if df is None or df.empty:
             raise ValueError("DataFrame is empty or not provided.")
+        if isinstance(df, pd.Series):
+            df = pd.DataFrame(df, columns=[columnName])
         if columnName not in df.columns:
             raise ValueError(f"Column '{columnName}' not found in DataFrame.")
         
@@ -114,7 +121,20 @@ class TextClassifier:
         """
         with open(filename, 'wb') as f:
             pickle.dump(self.vectorizer, f)
-        print(f"TF-IDF vectorizer saved to {filename}")        
+        print(f"TF-IDF vectorizer saved to {filename}")      
+
+    def load(self, filename: str):
+        """
+        Load the TF-IDF vectorizer from a file.
+        """
+        if not filename.endswith('.pkl'):
+            raise ValueError("Filename must end with '.pkl'")
+        if not os.path.exists(filename):
+            raise FileNotFoundError(f"File '{filename}' does not exist.")
+        
+        with open(filename, 'rb') as f:
+            self = pickle.load(f)
+        print(f"loaded from {filename}")
 
     def load_tfidf_vectorizer(self, filename: str):
         """
