@@ -32,7 +32,7 @@ jobs:
               run: |
                 mkdir -p ml/EDA/reports
                 for notebook in ml/EDA/*.ipynb; do
-                    jupyter nbconvert --to pdf "$notebook" --output-dir=./ml/EDA/reports --output="${notebook%}.pdf" --no-input --no-prompt
+                    jupyter nbconvert --to pdf "$notebook" --output-dir=./ml/EDA/reports --output="${notebook%}.ipynb.pdf" --no-input --no-prompt
                 done
             - name: commit PDFs
               run: |
