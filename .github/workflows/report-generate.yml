@@ -1,0 +1,40 @@
+name: Generate PDF Report
+on:
+    push:
+        branches:
+            - main
+            - 'topics/**'
+        paths:
+            - 'ml/EDA/**.ipynb'
+    
+
+jobs:
+    generate-report:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Setup Python
+              uses: actions/setup-python@v4
+              with:
+                python-version: 3.11
+
+            - name: Install dependencies
+              run: |
+                python -m pip install --upgrade pip
+                pip install -r ml/requirements.txt
+
+            - name: Generate PDF Report
+              run: |
+                mkdir -p ./ml/EDA/reports
+                for notebook in *.ipynb; do
+                    jupyter nbconvert --to pdf "$notebook" --output-dir=./ --output="${notebook%}.pdf" --no-input --no-prompt
+                done
+            - name: Upload PDF Report
+              uses: actions/upload-artifact@v4
+              with:
+                name: notebook-reports
+                path: ml/EDA/reports/
+        
