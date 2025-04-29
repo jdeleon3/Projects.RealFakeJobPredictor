@@ -6,6 +6,7 @@ on:
             - 'topics/**'
         paths:
             - 'ml/EDA/**.ipynb'
+            - '.github/workflows/report-generate.yml'
     
 
 jobs:
@@ -23,8 +24,8 @@ jobs:
 
             - name: Install dependencies
               run: |
-                python -m pip install --upgrade pip
-                pip install texlive-xetex texlive-fonts-recommended texlive-plain-generic pandoc
+                sudo apt-get update                
+                sudo apt-get install -y texlive-xetex texlive-fonts-recommended texlive-plain-generic pandoc
                 pip install nbconvert jupyter
 
             - name: Generate PDF Report
